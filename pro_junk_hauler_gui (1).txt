@@ -1,0 +1,306 @@
+--==========================--
+--     PRO JUNK HAULER GUI WITH FULL FEATURES
+--==========================--
+
+local player = game.Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+-- Secret key
+local SECRET_KEY = "quantemhub1"
+
+--==========================--
+--       KEY ENTRY GUI
+--==========================--
+local keyGui = Instance.new("ScreenGui")
+keyGui.Name = "KeyEntryGui"
+keyGui.ResetOnSpawn = false
+keyGui.Parent = PlayerGui
+
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.new(0, 400, 0, 220)
+keyFrame.Position = UDim2.new(0.5, -200, 0.35, 0)
+keyFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
+keyFrame.BorderSizePixel = 0
+keyFrame.ClipsDescendants = true
+keyFrame.AnchorPoint = Vector2.new(0.5, 0)
+keyFrame.Parent = keyGui
+
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0, 15)
+uicorner.Parent = keyFrame
+
+local promptLabel = Instance.new("TextLabel")
+promptLabel.Size = UDim2.new(0.9, 0, 0, 60)
+promptLabel.Position = UDim2.new(0.05, 0, 0, 20)
+promptLabel.Text = "Get Key: https://discord.gg/Sk5rmMMf"
+promptLabel.TextColor3 = Color3.new(1,1,1)
+promptLabel.BackgroundTransparency = 1
+promptLabel.TextScaled = true
+promptLabel.TextWrapped = true
+promptLabel.TextXAlignment = Enum.TextXAlignment.Center
+promptLabel.TextYAlignment = Enum.TextYAlignment.Center
+promptLabel.Parent = keyFrame
+
+local keyBox = Instance.new("TextBox")
+keyBox.Size = UDim2.new(0.8, 0, 0, 50)
+keyBox.Position = UDim2.new(0.1, 0, 0, 100)
+keyBox.ClearTextOnFocus = true
+keyBox.PlaceholderText = "Enter Key Here"
+keyBox.TextScaled = true
+keyBox.TextColor3 = Color3.new(1,1,1)
+keyBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
+keyBox.BorderSizePixel = 0
+keyBox.Parent = keyFrame
+
+local keyBoxCorner = Instance.new("UICorner")
+keyBoxCorner.CornerRadius = UDim.new(0, 10)
+keyBoxCorner.Parent = keyBox
+
+local submitButton = Instance.new("TextButton")
+submitButton.Size = UDim2.new(0.6, 0, 0, 45)
+submitButton.Position = UDim2.new(0.2, 0, 0, 160)
+submitButton.Text = "Submit"
+submitButton.BackgroundColor3 = Color3.fromRGB(70,70,70)
+submitButton.TextColor3 = Color3.new(1,1,1)
+submitButton.TextScaled = true
+submitButton.BorderSizePixel = 0
+submitButton.Parent = keyFrame
+
+local submitCorner = Instance.new("UICorner")
+submitCorner.CornerRadius = UDim.new(0, 10)
+submitCorner.Parent = submitButton
+
+--==========================--
+--   FUNCTION TO SHOW MAIN GUI
+--==========================--
+local function showMainGUI()
+    keyGui:Destroy()
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "ProJunkHaulerGUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = PlayerGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 250)
+    frame.Position = UDim2.new(0.5, -150, 0.3, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = screenGui
+    frame.BackgroundTransparency = 1 -- fade-in start
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    title.Text = "Pro Junk Hauler"
+    title.TextColor3 = Color3.new(1,1,1)
+    title.TextScaled = true
+    title.Parent = frame
+    title.BackgroundTransparency = 1
+
+    local minimize = Instance.new("TextButton")
+    minimize.Size = UDim2.new(0, 30, 0, 30)
+    minimize.Position = UDim2.new(1, -35, 0, 0)
+    minimize.Text = "-"
+    minimize.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    minimize.TextColor3 = Color3.new(1,1,1)
+    minimize.Parent = frame
+    minimize.BackgroundTransparency = 1
+
+    local contents = Instance.new("Frame")
+    contents.Size = UDim2.new(1, 0, 1, -30)
+    contents.Position = UDim2.new(0, 0, 0, 30)
+    contents.BackgroundTransparency = 1
+    contents.Parent = frame
+    contents.Visible = false -- hide initially for fade-in
+
+    local function createButton(text, yPos)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -20, 0, 40)
+        btn.Position = UDim2.new(0, 10, 0, yPos)
+        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.TextScaled = true
+        btn.Text = text
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 10)
+        corner.Parent = btn
+
+        btn.MouseEnter:Connect(function()
+            btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        end)
+        btn.MouseLeave:Connect(function()
+            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        end)
+
+        btn.Parent = contents
+        return btn
+    end
+
+    local teleportButton = createButton("Teleport to Sell Area", 10)
+    local dualTeleportButton = createButton("Dual Teleport: OFF", 60)
+    local fastPickupButton = createButton("Fast Pickup: OFF", 110)
+
+    local dualStatus = Instance.new("TextLabel")
+    dualStatus.Size = UDim2.new(0.2, 0, 0, 40)
+    dualStatus.Position = UDim2.new(0.78, 0, 0, 60)
+    dualStatus.BackgroundTransparency = 1
+    dualStatus.TextColor3 = Color3.new(1,1,1)
+    dualStatus.TextScaled = true
+    dualStatus.Text = "OFF"
+    dualStatus.Parent = contents
+
+    local fastStatus = Instance.new("TextLabel")
+    fastStatus.Size = UDim2.new(0.2, 0, 0, 40)
+    fastStatus.Position = UDim2.new(0.78, 0, 0, 110)
+    fastStatus.BackgroundTransparency = 1
+    fastStatus.TextColor3 = Color3.new(1,1,1)
+    fastStatus.TextScaled = true
+    fastStatus.Text = "OFF"
+    fastStatus.Parent = contents
+
+    local minimized = false
+    minimize.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            contents.Visible = false
+            frame.Size = UDim2.new(0, 300, 0, 30)
+            minimize.Text = "+"
+        else
+            contents.Visible = true
+            frame.Size = UDim2.new(0, 300, 0, 250)
+            minimize.Text = "-"
+        end
+    end)
+
+    local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    TweenService:Create(frame, tweenInfo, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(title, tweenInfo, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(minimize, tweenInfo, {BackgroundTransparency = 0}):Play()
+    contents.Visible = true
+    for _, btn in pairs(contents:GetChildren()) do
+        if btn:IsA("TextButton") then
+            btn.BackgroundTransparency = 1
+            TweenService:Create(btn, tweenInfo, {BackgroundTransparency = 0}):Play()
+        end
+    end
+
+    -- Teleport to Sell Area
+    teleportButton.MouseButton1Click:Connect(function()
+        local char = player.Character
+        if char then
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if root then
+                pcall(function()
+                    root.CFrame = CFrame.new(550,3,250)
+                end)
+            end
+        end
+    end)
+
+    -- Dual Teleport
+    local minX, maxX = 694, 775
+    local minZ, maxZ = 69, 158
+    local yHeight = 3
+    local exclMinX, exclMaxX = 708, 762
+    local exclMinZ, exclMaxZ = 85, 140
+    local fixedPos = Vector3.new(581, yHeight, 267)
+    local randomInterval = 1
+    local fixedInterval = 2
+    local teleporting = false
+    local randomTimer = 0
+    local fixedTimer = 0
+
+    local function getRandomPosition()
+        while true do
+            local x = math.random(minX,maxX)
+            local z = math.random(minZ,maxZ)
+            if not (x >= exclMinX and x <= exclMaxX and z >= exclMinZ and z <= exclMaxZ) then
+                return Vector3.new(x, yHeight, z)
+            end
+        end
+    end
+
+    dualTeleportButton.MouseButton1Click:Connect(function()
+        teleporting = not teleporting
+        dualTeleportButton.Text = teleporting and "Dual Teleport: ON" or "Dual Teleport: OFF"
+        dualStatus.Text = teleporting and "ON" or "OFF"
+    end)
+
+    RunService.RenderStepped:Connect(function(dt)
+        if teleporting then
+            randomTimer = randomTimer + dt
+            fixedTimer = fixedTimer + dt
+            local char = player.Character
+            if char then
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    if randomTimer >= randomInterval then
+                        pcall(function()
+                            root.CFrame = CFrame.new(getRandomPosition())
+                        end)
+                        randomTimer = 0
+                    end
+                    if fixedTimer >= fixedInterval then
+                        pcall(function()
+                            root.CFrame = CFrame.new(fixedPos)
+                        end)
+                        fixedTimer = 0
+                    end
+                end
+            end
+        end
+    end)
+
+    -- Fast Pickup
+    local FAST_HOLD = 0.05
+    local fastEnabled = false
+    local originalValues = {}
+
+    local function setPromptFast(prompt)
+        if prompt and prompt:IsA("ProximityPrompt") then
+            pcall(function()
+                if fastEnabled then
+                    if originalValues[prompt] == nil then
+                        originalValues[prompt] = prompt.HoldDuration
+                    end
+                    prompt.HoldDuration = FAST_HOLD
+                else
+                    if originalValues[prompt] then
+                        prompt.HoldDuration = originalValues[prompt]
+                    end
+                end
+            end)
+        end
+    end
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        setPromptFast(obj)
+    end
+    workspace.DescendantAdded:Connect(function(desc)
+        setPromptFast(desc)
+    end)
+
+    fastPickupButton.MouseButton1Click:Connect(function()
+        fastEnabled = not fastEnabled
+        fastPickupButton.Text = fastEnabled and "Fast Pickup: ON" or "Fast Pickup: OFF"
+        fastStatus.Text = fastEnabled and "ON" or "OFF"
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            setPromptFast(obj)
+        end
+    end)
+end
+
+-- Key Submit
+submitButton.MouseButton1Click:Connect(function()
+    if keyBox.Text == SECRET_KEY then
+        showMainGUI()
+    else
+        promptLabel.Text = "Incorrect Key! Get it at: https://discord.gg/Sk5rmMMf"
+        keyBox.Text = ""
+    end
+end)
