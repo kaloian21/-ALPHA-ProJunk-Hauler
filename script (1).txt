@@ -1,0 +1,162 @@
+
+local FAST_HOLD = 0.05 -- seconds (set to a small value like 0.05-0.2)
+
+local function setPromptFast(prompt)
+    if prompt and prompt:IsA("ProximityPrompt") then
+       
+        pcall(function()
+            prompt.HoldDuration = FAST_HOLD
+        end)
+    end
+end
+
+for _, obj in ipairs(workspace:GetDescendants()) do
+    setPromptFast(obj)
+end
+
+workspace.DescendantAdded:Connect(function(desc)
+    setPromptFast(desc)
+end)
+
+--==========================--
+--     PRO JUNK HAULER GUI
+--==========================--
+
+local player = game.Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ProJunkHaulerGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = PlayerGui
+
+-- Main Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 200)
+frame.Position = UDim2.new(0.5, -150, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.Text = "Pro Junk Hauler"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Parent = frame
+
+-- Minimize Button
+local minimize = Instance.new("TextButton")
+minimize.Size = UDim2.new(0, 30, 0, 30)
+minimize.Position = UDim2.new(1, -35, 0, 0)
+minimize.Text = "-"
+minimize.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+minimize.TextColor3 = Color3.new(1, 1, 1)
+minimize.Parent = frame
+
+-- Content Frame (Buttons)
+local contents = Instance.new("Frame")
+contents.Size = UDim2.new(1, 0, 1, -30)
+contents.Position = UDim2.new(0, 0, 0, 30)
+contents.BackgroundTransparency = 1
+contents.Parent = frame
+
+-- Function to create buttons
+local function createButton(text, yPos)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextScaled = true
+    btn.Text = text
+    btn.Parent = contents
+    return btn
+end
+
+-- Buttons
+local teleportButton = createButton("Teleport to Sell Area", 10)
+local fastPickupButton = createButton("Fast Pickup: OFF", 60)
+
+--==========================--
+--      MINIMIZE LOGIC FIX
+--==========================
+local minimized = false
+minimize.MouseButton1Click:Connect(function()
+    minimized = not minimized
+
+    if minimized then
+        contents.Visible = false
+        frame.Size = UDim2.new(0, 300, 0, 30)  -- shrink to title bar
+        minimize.Text = "+"
+    else
+        contents.Visible = true
+        frame.Size = UDim2.new(0, 300, 0, 200) -- restore full size
+        minimize.Text = "-"
+    end
+end)
+
+--==========================--
+--   TELEPORT BUTTON LOGIC
+--==========================
+teleportButton.MouseButton1Click:Connect(function()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char:WaitForChild("HumanoidRootPart")
+
+    -- Teleport 550 right and 250 forward from world origin
+    local targetPos = Vector3.new(550, 3, 250)
+    root.CFrame = CFrame.new(targetPos)
+end)
+
+--==========================--
+--    FAST PICKUP TOGGLE
+--==========================
+local FAST_HOLD = 0.05
+local fastEnabled = false
+
+-- Store original hold durations
+local originalValues = {}
+
+local function setPromptFast(prompt)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        if fastEnabled then
+            if originalValues[prompt] == nil then
+                originalValues[prompt] = prompt.HoldDuration
+            end
+            pcall(function()
+                prompt.HoldDuration = FAST_HOLD
+            end)
+        else
+            -- restore original
+            if originalValues[prompt] then
+                pcall(function()
+                    prompt.HoldDuration = originalValues[prompt]
+                end)
+            end
+        end
+    end
+end
+
+-- Apply to all existing prompts
+for _, obj in ipairs(workspace:GetDescendants()) do
+    setPromptFast(obj)
+end
+
+-- Apply to new prompts
+workspace.DescendantAdded:Connect(function(desc)
+    setPromptFast(desc)
+end)
+
+-- Toggle button click
+fastPickupButton.MouseButton1Click:Connect(function()
+    fastEnabled = not fastEnabled
+    fastPickupButton.Text = fastEnabled and "Fast Pickup: ON" or "Fast Pickup: OFF"
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        setPromptFast(obj)
+    end
+end)
