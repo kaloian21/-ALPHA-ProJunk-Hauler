@@ -1,4 +1,3 @@
---// Quantum Hub (All-in-One) with Minimize/Restore Animation
 local KEY = "quantumhub1"
 local SELL_POS = Vector3.new(550, 3, 250)
 
@@ -6,9 +5,6 @@ local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.ResetOnSpawn = false
 
-----------------------------------------------------------
--- FRAME UI
-----------------------------------------------------------
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 450, 0, 230)
 frame.Position = UDim2.new(0.5, -225, 0.5, -115)
@@ -22,7 +18,6 @@ local stroke = Instance.new("UIStroke", frame)
 stroke.Thickness = 2
 stroke.Color = Color3.fromRGB(120, 0, 0)
 
--- Title bar
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1,0,0,40)
 title.Position = UDim2.new(0,0,0,0)
@@ -68,9 +63,7 @@ submit.TextColor3 = Color3.fromRGB(255,255,255)
 local submitCorner = Instance.new("UICorner", submit)
 submitCorner.CornerRadius = UDim.new(0,15)
 
-----------------------------------------------------------
--- Fade Functions
-----------------------------------------------------------
+
 local function fadeOut()
 	for i = 0,1,0.1 do
 		frame.BackgroundTransparency = i
@@ -81,9 +74,7 @@ local function fadeOut()
 	end
 end
 
-----------------------------------------------------------
--- Unlock + Main Hub
-----------------------------------------------------------
+
 submit.MouseButton1Click:Connect(function()
 	if keyBox.Text ~= KEY then
 		title.Text = "WRONG KEY!"
@@ -145,7 +136,6 @@ submit.MouseButton1Click:Connect(function()
 	local fastButton = createButton("Fast Pickup (OFF)",2)
 	local qtButton = createButton("Quantum Teleport (OFF)",3)
 
-	-- Store original size and position for minimize/restore
 	local originalSize = frame.Size
 	local minimized = false
 
@@ -175,9 +165,6 @@ submit.MouseButton1Click:Connect(function()
 		end
 	end)
 
-	------------------------------------------------------
-	-- BUTTON LOGIC
-	------------------------------------------------------
 	tpButton.MouseButton1Click:Connect(function()
 		local char = player.Character
 		if char and char:FindFirstChild("HumanoidRootPart") then
@@ -246,9 +233,6 @@ submit.MouseButton1Click:Connect(function()
 		qtButton.Text = qtEnabled and "Quantum Teleport (ON)" or "Quantum Teleport (OFF)"
 	end)
 
-	------------------------------------------------------
-	-- DRAG LOGIC
-	------------------------------------------------------
 	local dragging = false
 	local dragInput, mousePos, framePos
 	local UserInputService = game:GetService("UserInputService")
