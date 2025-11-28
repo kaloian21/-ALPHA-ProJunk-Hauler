@@ -1,9 +1,3 @@
--- Quantum Hub — alternating teleports (junk -> sell -> junk -> sell ...)
--- LocalScript: place in StarterPlayerScripts or a LocalScript where LocalPlayer is available.
--- This version enforces: 1 teleport to junk area, then 1 teleport to SELL_POS, repeating.
--- HOLD_RADIUS increased for more reliable ProximityPrompt detection.
-
--- Config
 local KEY = "quantumhub1"
 local SELL_POS = Vector3.new(550, 3, 250)
 
@@ -15,15 +9,15 @@ local JUNK_EXCL_MIN_Z, JUNK_EXCL_MAX_Z = 85, 140
 local JUNK_Y = 3
 
 -- Hold simulation config (robust)
-local HOLD_DURATION = 0.5            -- seconds to "hold E" after teleport
-local HOLD_RADIUS = 18               -- studs to search for a ProximityPrompt to hold (increased)
-local HOLD_DELAY_AFTER_TELEPORT = 0.2-- wait after teleport before searching for prompts
-local HOLD_ATTEMPTS = 3              -- number of attempts to try finding/holding prompts
-local HOLD_ATTEMPT_INTERVAL = 0.12   -- wait between attempts
+local HOLD_DURATION = 0.5         
+local HOLD_RADIUS = 18              
+local HOLD_DELAY_AFTER_TELEPORT = 0.2
+local HOLD_ATTEMPTS = 3             
+local HOLD_ATTEMPT_INTERVAL = 0.12  
 
 -- Teleport timing
-local TELEPORT_INTERVAL = 1.0        -- seconds between each teleport in the alternating sequence
-local TELEPORT_COOLDOWN = 0.25       -- defensive cooldown after teleport
+local TELEPORT_INTERVAL = 1.0      
+local TELEPORT_COOLDOWN = 0.25      
 
 -- Services
 local Players = game:GetService("Players")
@@ -288,7 +282,7 @@ local function onHeartbeat(dt)
 			target = getRandomJunkPosition()
 		end
 		local ok = doTeleport(target)
-		-- flip the alternating flag only if teleport actually executed (prevents toggling on failed attempts)
+		
 		if ok then nextTeleportIsSell = not nextTeleportIsSell end
 	end
 end
@@ -443,8 +437,5 @@ submit.MouseButton1Click:Connect(function()
 	end))
 end)
 
--- Cleanup on GUI removed / player leave
 trackConnection(gui.AncestryChanged:Connect(function(_, parent) if not parent then cleanup() end end))
 trackConnection(player.AncestryChanged:Connect(function(_, parent) if not parent then cleanup() end end))
-
--- End of script
