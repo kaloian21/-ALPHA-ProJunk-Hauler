@@ -1,4 +1,6 @@
+-- Quantum Hub LocalScript (invite text made bigger)
 local KEY = "quantumhub1"
+local INVITE = "https://discord.gg/FYgZm9nH4C"
 local SELL_POS = Vector3.new(550, 3, 250)
 
 -- Junk/random area config (same as earlier)
@@ -111,9 +113,92 @@ local minButton = trackCreated(newInstance("TextButton", {
 }))
 makeCorner(minButton, 10)
 
+-- Invite label + copy button (made bigger)
+local inviteFrame = trackCreated(newInstance("Frame", {
+	Size = UDim2.new(0.8,0,0,44),          -- increased height for larger text
+	Position = UDim2.new(0.1,0,0.28,0),    -- slightly higher to make room
+	BackgroundTransparency = 1,
+	Parent = frame,
+}))
+local inviteLabel = trackCreated(newInstance("TextLabel", {
+	Size = UDim2.new(1, -70, 1, 0),
+	Position = UDim2.new(0,0,0,0),
+	BackgroundTransparency = 1,
+	Text = INVITE,
+	TextColor3 = Color3.fromRGB(0,102,204),
+	TextScaled = true,                     -- enable scaling so it's visibly larger
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Font = Enum.Font.GothamBold,           -- bolder font helps readability at larger size
+	Parent = inviteFrame,
+}))
+local copyButton = trackCreated(newInstance("TextButton", {
+	Size = UDim2.new(0,64,0,30),
+	Position = UDim2.new(1, -68, 0, 7),
+	Text = "Copy",
+	TextScaled = true,
+	Font = Enum.Font.GothamBold,
+	BackgroundColor3 = Color3.fromRGB(30,30,30),
+	TextColor3 = Color3.fromRGB(255,255,255),
+	Parent = inviteFrame,
+}))
+makeCorner(copyButton, 8)
+
+-- small feedback label (initially hidden)
+local feedback = trackCreated(newInstance("TextLabel", {
+	Size = UDim2.new(0,120,0,24),
+	Position = UDim2.new(0.5, -60, 0.06, 40),
+	BackgroundTransparency = 0.8,
+	BackgroundColor3 = Color3.fromRGB(20,20,20),
+	Text = "",
+	TextColor3 = Color3.fromRGB(255,255,255),
+	TextScaled = true,
+	Visible = false,
+	Parent = frame,
+}))
+makeCorner(feedback, 8)
+
+local function showFeedback(text, time)
+	feedback.Text = text or ""
+	feedback.Visible = true
+	feedback.TextTransparency = 1
+	feedback.BackgroundTransparency = 1
+	tween(feedback, {TextTransparency = 0, BackgroundTransparency = 0.5}, TweenInfo.new(0.18))
+	task.delay(time or 1.2, function()
+		if feedback and feedback.Parent then
+			tween(feedback, {TextTransparency = 1, BackgroundTransparency = 1}, TweenInfo.new(0.18))
+			task.delay(0.2, function() if feedback and feedback.Parent then feedback.Visible = false end end)
+		end
+	end)
+end
+
+-- Copy button behavior: try setclipboard, fallback to placing the link in keyBox and focusing it
+copyButton.MouseButton1Click:Connect(function()
+	-- try clipboard
+	local ok = false
+	pcall(function()
+		-- many exploit environments provide setclipboard
+		if setclipboard then
+			setclipboard(INVITE)
+			ok = true
+		end
+	end)
+	if ok then
+		showFeedback("Invite copied!", 1.2)
+	else
+		-- fallback: put into keyBox and focus so user can copy manually
+		if keyBox then
+			keyBox.Text = INVITE
+			pcall(function() keyBox:CaptureFocus() end)
+			showFeedback("Placed in key box — press Ctrl/Cmd+C to copy", 2)
+		else
+			showFeedback("Could not copy. Manual: "..INVITE, 2.5)
+		end
+	end
+end)
+
 local keyBox = trackCreated(newInstance("TextBox", {
 	Size = UDim2.new(0.8,0,0,40),
-	Position = UDim2.new(0.1,0,0.45,0),
+	Position = UDim2.new(0.1,0,0.5,0),  -- moved down slightly to accommodate larger invite area
 	BackgroundColor3 = Color3.fromRGB(240,240,240),
 	PlaceholderText = "Enter Key",
 	Text = "",
@@ -298,7 +383,7 @@ submit.MouseButton1Click:Connect(function()
 	submit.Active = false
 	keyBox.Active = false
 
-	fadeElements({frame, title, keyBox, submit}, 1, 0.18)
+	fadeElements({frame, title, keyBox, submit, inviteFrame, inviteLabel, copyButton}, 1, 0.18)
 	task.wait(0.22)
 
 	frame.BackgroundTransparency = 0
@@ -322,6 +407,7 @@ submit.MouseButton1Click:Connect(function()
 
 	pcall(function() keyBox:Destroy() end)
 	pcall(function() submit:Destroy() end)
+	pcall(function() inviteFrame:Destroy() end) -- remove invite UI from locked view
 
 	local buttonContainer = trackCreated(newInstance("Frame", {
 		Size = UDim2.new(1,0,1,0),
