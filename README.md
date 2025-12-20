@@ -1,2 +1,2 @@
 # ALPHA-ProJunk-Hauler
-key is quantumhub1
+key is the discord server
