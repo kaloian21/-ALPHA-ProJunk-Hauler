@@ -1,16 +1,22 @@
--- Quantum Hub LocalScript (invite text made bigger)
-local KEY = "quantumhub1"
 local INVITE = "https://discord.gg/FYgZm9nH4C"
 local SELL_POS = Vector3.new(550, 3, 250)
 
--- Junk/random area config (same as earlier)
+local function reconstruct_key()
+	local encoded = {118,127,112,130,141,147,144,144,162,148,104}
+	local parts = {}
+	for i, v in ipairs(encoded) do
+		parts[i] = string.char(v - i * 5)
+	end
+	return table.concat(parts)
+end
+local KEY = reconstruct_key()
+
 local JUNK_MIN_X, JUNK_MAX_X = 694, 775
 local JUNK_MIN_Z, JUNK_MAX_Z = 69, 158
 local JUNK_EXCL_MIN_X, JUNK_EXCL_MAX_X = 708, 762
 local JUNK_EXCL_MIN_Z, JUNK_EXCL_MAX_Z = 85, 140
 local JUNK_Y = 3
 
--- Hold simulation config (robust)
 local HOLD_DURATION = 0.5         
 local HOLD_RADIUS = 18              
 local HOLD_DELAY_AFTER_TELEPORT = 0.2
@@ -21,7 +27,6 @@ local HOLD_ATTEMPT_INTERVAL = 0.12
 local TELEPORT_INTERVAL = 1.0      
 local TELEPORT_COOLDOWN = 0.25      
 
--- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
