@@ -2,7 +2,7 @@ local INVITE = "https://discord.gg/FYgZm9nH4C"
 local SELL_POS = Vector3.new(550, 3, 250)
 
 local function reconstruct_key()
-	local encoded = {118,127,112,130,141,147,144,144,162,148,104}
+	local encoded = {118,127,112,130,141,147,144,144,162,148,105}
 	local parts = {}
 	for i, v in ipairs(encoded) do
 		parts[i] = string.char(v - i * 5)
