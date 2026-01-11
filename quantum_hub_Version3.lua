@@ -41,21 +41,6 @@ local itemNames = {
 	"Grandfather Clock","Dead Body","Sarcophagus","Tank"
 }
 
-local function bringAllItems()
-	if not player.Character then return end
-	local hrp = player.Character:WaitForChild("HumanoidRootPart")
-	local pos = hrp.Position
-	for _,obj in ipairs(Workspace:GetDescendants()) do
-		if table.find(itemNames,obj.Name) then
-			if obj:IsA("Model") and obj.PrimaryPart then
-				obj:SetPrimaryPartCFrame(CFrame.new(pos + Vector3.new(math.random(-6,6),0,math.random(-6,6))))
-			elseif obj:IsA("BasePart") then
-				obj.CFrame = CFrame.new(pos + Vector3.new(math.random(-6,6),0,math.random(-6,6)))
-			end
-		end
-	end
-end
-
 local function new(class,props,parent)
 	local o = Instance.new(class)
 	if props then for k,v in pairs(props) do o[k]=v end end
@@ -69,14 +54,14 @@ end
 
 local gui = new("ScreenGui",{ResetOnSpawn=false},playerGui)
 
+-- Start with small key GUI
 local frame = new("Frame",{
-	Size=UDim2.new(0,450,0,260),
-	Position=UDim2.new(0.5,-225,0.5,-130),
+	Size=UDim2.new(0,400,0,180), -- small
+	Position=UDim2.new(0.5,-200,0.5,-90),
 	BackgroundColor3=Color3.fromRGB(20,20,20),
 	Active=true
 },gui)
-corner(frame,25)
-
+corner(frame,20)
 new("UIStroke",{Thickness=2,Color=Color3.fromRGB(120,0,0),Parent=frame})
 
 local title = new("TextLabel",{
@@ -128,7 +113,7 @@ corner(minBtn,10)
 minBtn.MouseButton1Click:Connect(function()
 	minimized=not minimized
 	for _,v in ipairs(mainContent) do v.Visible=not minimized end
-	TweenService:Create(frame,TweenInfo.new(0.25),{Size=minimized and minSize or origSize}):Play()
+	TweenService:Create(frame,TweenInfo.new(0.25),{Size=minimized and minSize or frame.Size}):Play()
 end)
 
 local inviteLabel=new("TextLabel",{
@@ -136,7 +121,7 @@ local inviteLabel=new("TextLabel",{
 	Position=UDim2.new(0.05,0,0.18,0),
 	Text=INVITE,
 	TextScaled=true,
-	TextXAlignment=Left,
+	TextXAlignment=Enum.TextXAlignment.Left,
 	TextColor3=Color3.fromRGB(0,120,255),
 	BackgroundTransparency=1,
 	Font=Enum.Font.GothamBold,
@@ -160,7 +145,7 @@ end)
 
 local keyBox=new("TextBox",{
 	Size=UDim2.new(0.8,0,0,40),
-	Position=UDim2.new(0.1,0,0.45,0),
+	Position=UDim2.new(0.1,0,0.5,0),
 	PlaceholderText="Enter Key",
 	TextScaled=true,
 	Font=Enum.Font.Gotham,
@@ -170,7 +155,7 @@ corner(keyBox,15)
 
 local unlock=new("TextButton",{
 	Size=UDim2.new(0.6,0,0,40),
-	Position=UDim2.new(0.2,0,0.7,0),
+	Position=UDim2.new(0.2,0,0.75,0),
 	Text="Unlock",
 	TextScaled=true,
 	BackgroundColor3=Color3.fromRGB(200,0,0),
@@ -184,6 +169,7 @@ player.CharacterAdded:Connect(function(c)
 	hrp=c:WaitForChild("HumanoidRootPart")
 end)
 if player.Character then hrp=player.Character:WaitForChild("HumanoidRootPart") end
+
 
 local fastPickup=false
 
@@ -266,6 +252,8 @@ end)
 unlock.MouseButton1Click:Connect(function()
 	if keyBox.Text~=KEY then title.Text="WRONG KEY" return end
 
+	TweenService:Create(frame,TweenInfo.new(0.25),{Size=UDim2.new(0,500,0,340)}):Play()
+
 	keyBox.Visible=false
 	unlock.Visible=false
 	inviteLabel.Visible=false
@@ -291,7 +279,122 @@ unlock.MouseButton1Click:Connect(function()
 	local tp=btn("Teleport to Sell",0.15)
 	local fast=btn("Fast Pickup (OFF)",0.32)
 	local qtBtn=btn("Quantum Teleport (OFF)",0.49)
-	local bring=btn("Bring All Items",0.66)
+
+	local bringLabel=new("TextLabel",{
+		Size=UDim2.new(0.4,0,0,35),
+		Position=UDim2.new(0.1,0,0.66,0),
+		Text="Bring Item:",
+		TextScaled=true,
+		BackgroundTransparency=1,
+		TextColor3=Color3.new(1,1,1),
+		Font=Enum.Font.GothamBold,
+		Parent=box
+	})
+
+	local bringBox=new("TextBox",{
+		Size=UDim2.new(0.4,0,0,35),
+		Position=UDim2.new(0.5,0,0.66,0),
+		PlaceholderText="Type name or 'all'",
+		TextScaled=true,
+		Font=Enum.Font.Gotham,
+		Parent=box
+	})
+	corner(bringBox,10)
+
+	local infoBtn=new("TextButton",{
+		Size=UDim2.new(0,25,0,25),
+		Position=UDim2.new(0.92,0,0.66,0),
+		Text="i",
+		TextScaled=true,
+		BackgroundColor3=Color3.fromRGB(50,50,50),
+		TextColor3=Color3.new(1,1,1),
+		Parent=box
+	})
+	corner(infoBtn,8)
+
+	local infoGui=new("Frame",{
+		Size=UDim2.new(0,300,0,250),
+		Position=UDim2.new(0.5,-150,0.5,-125),
+		BackgroundColor3=Color3.fromRGB(20,20,20),
+		Visible=false,
+		Parent=gui
+	})
+	corner(infoGui,15)
+	new("UIStroke",{Thickness=2,Color=Color3.fromRGB(120,0,0),Parent=infoGui})
+	new("TextLabel",{Size=UDim2.new(1,0,1,0),Text="Items:\n"..table.concat(itemNames,"\n").."\n\nType 'all' to teleport everything",TextScaled=true,TextColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=Enum.Font.GothamBold,Parent=infoGui})
+
+	local closeInfoBtn=new("TextButton",{
+		Size=UDim2.new(0,25,0,25),
+		Position=UDim2.new(1,-30,0,5),
+		Text="X",
+		TextScaled=true,
+		BackgroundColor3=Color3.fromRGB(150,0,0),
+		TextColor3=Color3.new(1,1,1),
+		Parent=infoGui
+	})
+	corner(closeInfoBtn,5)
+
+	closeInfoBtn.MouseButton1Click:Connect(function()
+		infoGui.Visible=false
+	end)
+
+	do
+		local dragging,dragStart,posStart
+		infoGui.InputBegan:Connect(function(i)
+			if i.UserInputType==Enum.UserInputType.MouseButton1 then
+				dragging=true
+				dragStart=i.Position
+				posStart=Vector2.new(infoGui.Position.X.Offset,infoGui.Position.Y.Offset)
+				i.Changed:Connect(function()
+					if i.UserInputState==Enum.UserInputState.End then dragging=false end
+				end)
+			end
+		end)
+		infoGui.InputChanged:Connect(function(i)
+			if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
+				local d=i.Position-dragStart
+				infoGui.Position=UDim2.new(0,posStart.X+d.X,0,posStart.Y+d.Y)
+			end
+		end)
+	end
+
+	infoBtn.MouseButton1Click:Connect(function()
+		infoGui.Visible = not infoGui.Visible
+	end)
+
+	bringBox.FocusLost:Connect(function(enterPressed)
+		if not enterPressed then return end
+		local input = bringBox.Text:lower()
+		if input=="all" then
+			for _,name in ipairs(itemNames) do
+				for _,obj in ipairs(Workspace:GetDescendants()) do
+					if obj.Name==name and hrp then
+						if obj:IsA("Model") and obj.PrimaryPart then
+							obj:SetPrimaryPartCFrame(hrp.CFrame + Vector3.new(math.random(-6,6),0,math.random(-6,6)))
+						elseif obj:IsA("BasePart") then
+							obj.CFrame = hrp.CFrame + Vector3.new(math.random(-6,6),0,math.random(-6,6))
+						end
+					end
+				end
+			end
+		else
+			for _,name in ipairs(itemNames) do
+				if name:lower()==input then
+					for _,obj in ipairs(Workspace:GetDescendants()) do
+						if obj.Name==name and hrp then
+							if obj:IsA("Model") and obj.PrimaryPart then
+								obj:SetPrimaryPartCFrame(hrp.CFrame + Vector3.new(math.random(-6,6),0,math.random(-6,6)))
+							elseif obj:IsA("BasePart") then
+								obj.CFrame = hrp.CFrame + Vector3.new(math.random(-6,6),0,math.random(-6,6))
+							end
+						end
+					end
+					break
+				end
+			end
+		end
+		bringBox.Text=""
+	end)
 
 	tp.MouseButton1Click:Connect(function()
 		if hrp then hrp.CFrame=CFrame.new(SELL_POS) end
@@ -313,6 +416,4 @@ unlock.MouseButton1Click:Connect(function()
 		timer=0
 		nextTeleportIsSell=false
 	end)
-
-	bring.MouseButton1Click:Connect(bringAllItems)
 end)
