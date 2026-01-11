@@ -1,3 +1,4 @@
+---- yo
 local INVITE = "https://discord.gg/FYgZm9nH4C"
 local SELL_POS = Vector3.new(550,3,250)
 
