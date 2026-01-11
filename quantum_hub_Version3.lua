@@ -1,4 +1,3 @@
----- yo
 local INVITE = "https://discord.gg/FYgZm9nH4C"
 local SELL_POS = Vector3.new(550,3,250)
 
@@ -48,16 +47,13 @@ local function new(class,props,parent)
 	if parent then o.Parent=parent end
 	return o
 end
-
 local function corner(ui,r)
 	new("UICorner",{CornerRadius=UDim.new(0,r or 12)},ui)
 end
 
 local gui = new("ScreenGui",{ResetOnSpawn=false},playerGui)
-
--- Start with small key GUI
 local frame = new("Frame",{
-	Size=UDim2.new(0,400,0,180), -- small
+	Size=UDim2.new(0,400,0,180),
 	Position=UDim2.new(0.5,-200,0.5,-90),
 	BackgroundColor3=Color3.fromRGB(20,20,20),
 	Active=true
@@ -75,24 +71,33 @@ local title = new("TextLabel",{
 	Parent=frame
 })
 
+-- MAIN GUI DRAG FIX
 do
-	local dragging,dragStart,frameStart
-	title.InputBegan:Connect(function(i)
-		if i.UserInputType==Enum.UserInputType.MouseButton1 then
-			dragging=true
-			dragStart=i.Position
-			frameStart=Vector2.new(frame.Position.X.Offset,frame.Position.Y.Offset)
-			i.Changed:Connect(function()
-				if i.UserInputState==Enum.UserInputState.End then dragging=false end
-			end)
-		end
-	end)
-	UserInputService.InputChanged:Connect(function(i)
-		if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
-			local d=i.Position-dragStart
-			frame.Position=UDim2.new(0,frameStart.X+d.X,0,frameStart.Y+d.Y)
-		end
-	end)
+    local dragging, dragStart, startPos
+    title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
 end
 
 local mainContent={}
@@ -110,11 +115,11 @@ local minBtn=new("TextButton",{
 	Parent=frame
 })
 corner(minBtn,10)
-
 minBtn.MouseButton1Click:Connect(function()
 	minimized=not minimized
-	for _,v in ipairs(mainContent) do v.Visible=not minimized end
-	TweenService:Create(frame,TweenInfo.new(0.25),{Size=minimized and minSize or frame.Size}):Play()
+	for _,v in ipairs(mainContent) do v.Visible = not minimized end
+	local targetSize = minimized and minSize or origSize
+	TweenService:Create(frame, TweenInfo.new(0.25), {Size=targetSize}):Play()
 end)
 
 local inviteLabel=new("TextLabel",{
@@ -128,7 +133,6 @@ local inviteLabel=new("TextLabel",{
 	Font=Enum.Font.GothamBold,
 	Parent=frame
 })
-
 local copyBtn=new("TextButton",{
 	Size=UDim2.new(0,80,0,30),
 	Position=UDim2.new(0.75,0,0.18,0),
@@ -139,7 +143,6 @@ local copyBtn=new("TextButton",{
 	Parent=frame
 })
 corner(copyBtn,8)
-
 copyBtn.MouseButton1Click:Connect(function()
 	if setclipboard then setclipboard(INVITE) end
 end)
@@ -153,7 +156,6 @@ local keyBox=new("TextBox",{
 	Parent=frame
 })
 corner(keyBox,15)
-
 local unlock=new("TextButton",{
 	Size=UDim2.new(0.6,0,0,40),
 	Position=UDim2.new(0.2,0,0.75,0),
@@ -171,9 +173,7 @@ player.CharacterAdded:Connect(function(c)
 end)
 if player.Character then hrp=player.Character:WaitForChild("HumanoidRootPart") end
 
-
 local fastPickup=false
-
 local qtEnabled=false
 local timer=0
 local lastTeleport=0
@@ -252,17 +252,15 @@ end)
 
 unlock.MouseButton1Click:Connect(function()
 	if keyBox.Text~=KEY then title.Text="WRONG KEY" return end
-
-	TweenService:Create(frame,TweenInfo.new(0.25),{Size=UDim2.new(0,500,0,340)}):Play()
-
+	local newSize = UDim2.new(0,500,0,340)
+	TweenService:Create(frame, TweenInfo.new(0.25), {Size=newSize}):Play()
+	origSize = newSize
 	keyBox.Visible=false
 	unlock.Visible=false
 	inviteLabel.Visible=false
 	copyBtn.Visible=false
-
 	local box=new("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Parent=frame})
 	table.insert(mainContent,box)
-
 	local function btn(text,y)
 		local b=new("TextButton",{
 			Size=UDim2.new(0.8,0,0,35),
@@ -276,11 +274,9 @@ unlock.MouseButton1Click:Connect(function()
 		corner(b,15)
 		return b
 	end
-
 	local tp=btn("Teleport to Sell",0.15)
 	local fast=btn("Fast Pickup (OFF)",0.32)
 	local qtBtn=btn("Quantum Teleport (OFF)",0.49)
-
 	local bringLabel=new("TextLabel",{
 		Size=UDim2.new(0.4,0,0,35),
 		Position=UDim2.new(0.1,0,0.66,0),
@@ -291,7 +287,6 @@ unlock.MouseButton1Click:Connect(function()
 		Font=Enum.Font.GothamBold,
 		Parent=box
 	})
-
 	local bringBox=new("TextBox",{
 		Size=UDim2.new(0.4,0,0,35),
 		Position=UDim2.new(0.5,0,0.66,0),
@@ -301,7 +296,6 @@ unlock.MouseButton1Click:Connect(function()
 		Parent=box
 	})
 	corner(bringBox,10)
-
 	local infoBtn=new("TextButton",{
 		Size=UDim2.new(0,25,0,25),
 		Position=UDim2.new(0.92,0,0.66,0),
@@ -323,7 +317,6 @@ unlock.MouseButton1Click:Connect(function()
 	corner(infoGui,15)
 	new("UIStroke",{Thickness=2,Color=Color3.fromRGB(120,0,0),Parent=infoGui})
 	new("TextLabel",{Size=UDim2.new(1,0,1,0),Text="Items:\n"..table.concat(itemNames,"\n").."\n\nType 'all' to teleport everything",TextScaled=true,TextColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=Enum.Font.GothamBold,Parent=infoGui})
-
 	local closeInfoBtn=new("TextButton",{
 		Size=UDim2.new(0,25,0,25),
 		Position=UDim2.new(1,-30,0,5),
@@ -334,27 +327,31 @@ unlock.MouseButton1Click:Connect(function()
 		Parent=infoGui
 	})
 	corner(closeInfoBtn,5)
-
 	closeInfoBtn.MouseButton1Click:Connect(function()
 		infoGui.Visible=false
 	end)
-
+	-- INFO GUI DRAG FIX
 	do
-		local dragging,dragStart,posStart
-		infoGui.InputBegan:Connect(function(i)
-			if i.UserInputType==Enum.UserInputType.MouseButton1 then
+		local dragging,dragStart,startPos
+		infoGui.InputBegan:Connect(function(input)
+			if input.UserInputType==Enum.UserInputType.MouseButton1 then
 				dragging=true
-				dragStart=i.Position
-				posStart=Vector2.new(infoGui.Position.X.Offset,infoGui.Position.Y.Offset)
-				i.Changed:Connect(function()
-					if i.UserInputState==Enum.UserInputState.End then dragging=false end
+				dragStart=input.Position
+				startPos=infoGui.Position
+				input.Changed:Connect(function()
+					if input.UserInputState==Enum.UserInputState.End then dragging=false end
 				end)
 			end
 		end)
-		infoGui.InputChanged:Connect(function(i)
-			if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
-				local d=i.Position-dragStart
-				infoGui.Position=UDim2.new(0,posStart.X+d.X,0,posStart.Y+d.Y)
+		infoGui.InputChanged:Connect(function(input)
+			if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
+				local delta=input.Position-dragStart
+				infoGui.Position=UDim2.new(
+					startPos.X.Scale,
+					startPos.X.Offset+delta.X,
+					startPos.Y.Scale,
+					startPos.Y.Offset+delta.Y
+				)
 			end
 		end)
 	end
@@ -369,7 +366,7 @@ unlock.MouseButton1Click:Connect(function()
 		if input=="all" then
 			for _,name in ipairs(itemNames) do
 				for _,obj in ipairs(Workspace:GetDescendants()) do
-					if obj.Name==name and hrp then
+					if obj.Name:lower()==name:lower() and hrp then
 						if obj:IsA("Model") and obj.PrimaryPart then
 							obj:SetPrimaryPartCFrame(hrp.CFrame + Vector3.new(math.random(-6,6),0,math.random(-6,6)))
 						elseif obj:IsA("BasePart") then
@@ -382,7 +379,7 @@ unlock.MouseButton1Click:Connect(function()
 			for _,name in ipairs(itemNames) do
 				if name:lower()==input then
 					for _,obj in ipairs(Workspace:GetDescendants()) do
-						if obj.Name==name and hrp then
+						if obj.Name:lower()==input and hrp then
 							if obj:IsA("Model") and obj.PrimaryPart then
 								obj:SetPrimaryPartCFrame(hrp.CFrame + Vector3.new(math.random(-6,6),0,math.random(-6,6)))
 							elseif obj:IsA("BasePart") then
@@ -390,7 +387,6 @@ unlock.MouseButton1Click:Connect(function()
 							end
 						end
 					end
-					break
 				end
 			end
 		end
@@ -400,7 +396,6 @@ unlock.MouseButton1Click:Connect(function()
 	tp.MouseButton1Click:Connect(function()
 		if hrp then hrp.CFrame=CFrame.new(SELL_POS) end
 	end)
-
 	fast.MouseButton1Click:Connect(function()
 		fastPickup=not fastPickup
 		fast.Text=fastPickup and "Fast Pickup (ON)" or "Fast Pickup (OFF)"
@@ -410,7 +405,6 @@ unlock.MouseButton1Click:Connect(function()
 			end
 		end
 	end)
-
 	qtBtn.MouseButton1Click:Connect(function()
 		qtEnabled=not qtEnabled
 		qtBtn.Text=qtEnabled and "Quantum Teleport (ON)" or "Quantum Teleport (OFF)"
